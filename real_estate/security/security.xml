@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="estate_group_user" model="res.groups">
+        <field name="name">Agent</field>
+        <field name="category_id" ref="base.module_category_real_estate_brokerage"/>
+    </record>
+
+    <record id="estate_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="base.module_category_real_estate_brokerage"/>
+        <field name="implied_ids" eval="[(4, ref('estate_group_user'))]"/>
+    </record>
+    <!-- Property Types: Only Managers can update -->
+    <record id="estate_property_type_rule_manager" model="ir.rule">
+        <field name="name">Property Type: Manager Access</field>
+        <field name="model_id" ref="model_estate_property_type"/>
+        <field name="groups" eval="[(4, ref('estate_group_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="estate_property_type_rule_user" model="ir.rule">
+        <field name="name">Property Type: User Read Only</field>
+        <field name="model_id" ref="model_estate_property_type"/>
+        <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <!-- Tags: Only Managers can update -->
+    <record id="estate_tag_rule_manager" model="ir.rule">
+        <field name="name">Tags: Manager Access</field>
+        <field name="model_id" ref="model_estate_property_tag"/>
+        <field name="groups" eval="[(4, ref('estate_group_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="estate_tag_rule_user" model="ir.rule">
+        <field name="name">Tags: User Read Only</field>
+        <field name="model_id" ref="model_estate_property_tag"/>
+        <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+    
+    <!-- Record Rule for Agents to see only their own properties -->
+    <record id="estate_agent_property_rule" model="ir.rule">
+        <field name="name">Agent Own Properties</field>
+        <field name="model_id" ref="model_estate_property"/>
+        <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+        <field name="domain_force">[('agent_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Record Rule for Managers to see all properties -->
+    <record id="estate_manager_property_rule" model="ir.rule">
+        <field name="name">Manager All Properties</field>
+        <field name="model_id" ref="model_estate_property"/>
+        <field name="groups" eval="[(4, ref('estate_group_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+    <record id="estate_property_rule_agent" model="ir.rule">
+        <field name="name">Property: Agent Access</field>
+        <field name="model_id" ref="model_estate_property"/>
+        <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+        <field name="domain_force">['|', ('salesperson_id', '=', False), ('salesperson_id', '=', user.id)]</field>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <!-- Other permissions as needed -->
+    </record>
+
+    <data noupdate="1">
+
+        <!-- Restrict property visibility to the user's company -->
+        <record id="estate_property_rule_company" model="ir.rule">
+            <field name="name">Property: Company Access</field>
+            <field name="model_id" ref="model_estate_property"/>
+            <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+            <field name="domain_force">[('company_id', 'in', [user.company_id.id])]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+    </data>  
+
+<data noupdate="1">
+
+        <!-- Property Types: Only Managers can add or modify -->
+        <record id="estate_property_type_rule_manager" model="ir.rule">
+            <field name="name">Property Type: Manager Access</field>
+            <field name="model_id" ref="real_estate.model_estate_property_type"/>
+            <field name="groups" eval="[(4, ref('estate_group_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="estate_property_type_rule_agent" model="ir.rule">
+            <field name="name">Property Type: Agent Read Only</field>
+            <field name="model_id" ref="real_estate.model_estate_property_type"/>
+            <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Tags: Only Managers can add or modify -->
+        <record id="estate_tag_rule_manager" model="ir.rule">
+            <field name="name">Tags: Manager Access</field>
+            <field name="model_id" ref="real_estate.model_estate_property_tag"/>
+            <field name="groups" eval="[(4, ref('estate_group_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="estate_tag_rule_agent" model="ir.rule">
+            <field name="name">Tags: Agent Read Only</field>
+            <field name="model_id" ref="real_estate.model_estate_property_tag"/>
+            <field name="groups" eval="[(4, ref('estate_group_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+    </data>
+
+    <data noupdate="1">
+
+        <record id="action_estate_settings" model="ir.actions.act_window">
+            <field name="name">Estate Settings</field>
+            <field name="res_model">estate.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <!-- Settings Menu: Only visible to Managers -->
+        <record id="menu_estate_settings" model="ir.ui.menu">
+            <field name="name">Settings</field>
+            <field name="parent_id" ref="real_estate.menu_estate_root"/>
+            <field name="action" ref="action_estate_settings"/>
+            <field name="groups_id" eval="[(4, ref('estate_group_manager'))]"/>
+        </record>
+
+    </data>          
+</odoo>

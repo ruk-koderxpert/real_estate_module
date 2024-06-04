@@ -9,35 +9,46 @@ class EstatePropertyModel(models.Model):
 
 	title = fields.Char(string="Title", default="unknown")
 	note = fields.Text(string="Description")
-	
+	agent_id = fields.Many2one('res.user', string="Agent Id")
 	property_type_id = fields.Many2one('estate.property.type', string="Property Type", required=True)
 	postcode = fields.Char(string="Postcode")
 	expected_price = fields.Float(string="Expected Price")
-	best_price = fields.Float(string="Best Offer", compute="compute_best_price")
+	best_price = fields.Float(string="Best Offer", compute="compute_best_price", readonly=True)
 	bedrooms = fields.Integer(default="2")
 	facades = fields.Integer(string="Facades")
 	garden = fields.Boolean(string="Garden")
 	garden_orientation = fields.Selection([('north','North'),('south','South'),('east','East'),('west','West')], string="Garden Orientation")
 
 	available_from = fields.Datetime("Available From", default=fields.Datetime.now, readonly=True)
-	selling_price = fields.Float(string="Selling Price", compute="compute_selling_price")
+	selling_price = fields.Float(string="Selling Price", compute="compute_selling_price", store=True, readonly=True)
 	living_area = fields.Integer(string="Living Area(sqm)")
 	garage = fields.Boolean(string="Garage")
 	garden_area = fields.Integer(string="Garden Area(sqm)")
 	active = fields.Boolean(string="Active", default=True)
 
 	salesman = fields.Char(string="Salesperson", default="Amit")
+	salesperson_id = fields.Char(string="Salesperson Id", default="ABC")
 	buyer = fields.Many2one('res.partner', string="Buyer")
 
 	tag_ids = fields.Many2many('estate.property.tag', string="Tags")
 	offer_ids = fields.One2many('estate.property.offer','property_id', string="Offer Id")
 	total_area = fields.Integer(string="Total Area(sqm)", compute="_compute_result")
 
-	price = fields.Many2one('estate.property.offer', string="Prices", required=True)
+	price = fields.Many2one('estate.property.offer', string="Prices")
 	# states = fields.Selection([('new','New'),('sold','Sold'),('cancel','Cancel')], default="new", string="State", tracking=True)
 
 	count = fields.Many2one('estate.property.type', string="Count")
 	stage = fields.Selection([('new','New'),('offer_received','Offer Received'),('offer_accepted','Offer Accepted'),('sold','Sold'),('cancel','Cancel')], default="new", string="Stage", readonly=True, tracking=True)
+
+	salesperson_id = fields.Many2one(comodel_name='res.users', string="Salesperson", index=True, tracking=True, default=lambda self: self.env.user)
+
+	company_id = fields.Many2one(
+	        'res.company', 
+	        string='Company', 
+	        required=True, 
+	        default=lambda self: self.env.user.company_id
+	    )
+
 
 	@api.constrains('expected_price')
 	def check_expected_price(self):
@@ -46,7 +57,7 @@ class EstatePropertyModel(models.Model):
 				raise ValidationError(_('Please Enter Positive Expected Price.......'))
 
 	@api.constrains('selling_price')
-	def check_expected_price(self):
+	def check_selling_price(self):
 		for rec in self:
 			if rec.selling_price <= 0:
 				raise ValidationError(_('Please Enter Positive Selling Price.......'))
@@ -114,9 +125,7 @@ class EstatePropertyModel(models.Model):
 	def compute_selling_price(self):
 		for offer in self.offer_ids:
 			if offer.status == 'accepted':
-				self.buyer = offer.partner_id
-				# self.states = self.states['offer_accepted']
-				
+				self.buyer = offer.partner_id				
 				self.selling_price = offer.price
 				break
 		else:
@@ -129,3 +138,7 @@ class EstatePropertyModel(models.Model):
 				raise ValidationError("Selling price cannot be lower than 90% of the expected price.")
 
 
+	@api.ondelete(at_uninstall=False)
+	def check_delete_stage(self):
+		if self.stage not in ['new', 'cancel']:
+			raise ValidationError(_("You cannot delete %s stage" % self.stage))

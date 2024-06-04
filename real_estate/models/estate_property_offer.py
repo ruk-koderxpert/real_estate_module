@@ -1,4 +1,4 @@
-from odoo import api, fields, models, _
+from odoo import api, fields, models, _, exceptions
 from datetime import timedelta, datetime
 from odoo.exceptions import ValidationError
 
@@ -8,6 +8,7 @@ class EstatePropertyOfferModel(models.Model):
 	_description = "Estate Property Offer"
 	_order = "price desc"
 	_rec_name = "property_type_id"
+	# _inherit = "estate.property.offer"
 
 	price = fields.Float(string="Price")
 	status = fields.Selection([('new','New'),('accepted','Accepted'),('refused','Refused')],string="Status", required=True, copy=False, default='new')
@@ -15,8 +16,10 @@ class EstatePropertyOfferModel(models.Model):
 	create_date = fields.Datetime(string="Date Time", readonly=True)
 	validity = fields.Integer(string="Validity (Days)")
 	date_deadline = fields.Datetime(string="Date Deadline", compute="compute_date_deadline", inverse="inverse_date_deadline", store=True)
-	title = fields.Char(name="Title")
+	title = fields.Char(string="Title")
 	
+	expected_price = fields.Float(string="Expected Price")
+
 	property_id = fields.Many2one('estate.property', string="Property")
 	property_type_id = fields.Many2one(related="property_id.property_type_id", string="Property Type", store=True)
 	# stage = fields.Many2one('estate.property', string="Stage")
@@ -53,3 +56,19 @@ class EstatePropertyOfferModel(models.Model):
 	def action_refuse(self):
 		for rec in self:
 			rec.status = 'refused'
+
+	# @api.model
+	# def create(self, vals):
+	# 	property_id = vals.get('property_id')
+	# 	new_offer_amount = vals.get('price')
+
+	# 	if property_id and new_offer_amount:
+	# 		property_obj = self.env['estate.property'].browse(property_id)
+
+	# 		existing_offers = self.search([('property_id', '=', property_id)])
+	# 		for offer in existing_offers:
+	# 			if offer.price >= new_offer_amount:
+	# 				raise exceptions.ValidationError('You cannot create an offer with lower amount than existing offer.')
+
+	# 		property_obj.stage = 'offer_received'
+	# 	return super(EstatePropertyOfferModel, self).create(vals)

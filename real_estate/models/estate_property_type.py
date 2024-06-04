@@ -13,6 +13,7 @@ class EstatePropertyTypeModel(models.Model):
 	
 	offer_ids = fields.One2many('estate.property.offer','property_type_id', string="Offers")
 	offer_count = fields.Integer(string="Offer Count", compute="compute_offer_count")
+	# expected_price = fields.Float(string="Expected Price")
 
 	_sql_constraints = [
 				('check_unique_property_type', 'unique(property_type)', 'Property type name must be unique.')

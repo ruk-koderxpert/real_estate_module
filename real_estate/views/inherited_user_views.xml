@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_property_user_form" model="ir.ui.view">
+            <field name="name">res.users.form.inherited</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Real Estate Properties">
+                        <field name="property_ids">
+                            <tree>
+                                <field name="title"/>
+                                <!-- <field name="property_type"/> -->
+                                <field name="facades"/>
+                                <field name="selling_price"/>
+                                <field name="living_area"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+</odoo>

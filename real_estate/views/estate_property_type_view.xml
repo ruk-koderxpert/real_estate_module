@@ -21,7 +21,7 @@
         <field name="arch" type="xml">
        		<tree expand="1">
        			<field name="property_type"/>
-       			<field name="offer_count" widget="statinfo"/>
+       			<!-- <field name="offer_count" widget="statinfo"/> -->
        			<field name="sequence" widget="handle"/>
        		</tree>
         </field>
@@ -43,27 +43,23 @@
 							<field string="Offer" name="offer_count" widget="statinfo"/>
 						</button>
 					</div>
-					<group>
-						<field name="property_type"/>
-						<field name="offer_count" readonly="1"/>
-					</group>
 					<notebook>
 						<page string="Offers">
 							<field name="offer_ids">
-								<tree>
-									<field name="property_id"/>
-									<field name="price"/>
+								<tree editable="bottom">
+									<field name="title"/>
+									<field name="expected_price"/>
 									<field name="status"/>
 								</tree>
-								<form>
+								<!-- <form>
 									<group>
 										<group>
 											<field name="title"/>
-											<!-- <field name="expected_price"/> -->
-											<!-- <field name="stage"/> -->
+											<field name="expected_price"/>
+											<field name="status"/>
 										</group>
 									</group>
-								</form>
+								</form> -->
 							</field>
 						</page>
 					</notebook>
